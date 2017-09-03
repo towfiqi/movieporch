@@ -1,0 +1,38 @@
+{
+  "name": "movieporch",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@rq/sly-scrolling": "^0.161.0",
+    "axios": "^0.16.2",
+    "history": "^4.7.2",
+    "iso-639-1": "^1.3.0",
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
+    "lodash.debounce": "^4.0.8",
+    "node-sass-chokidar": "0.0.3",
+    "npm-run-all": "^4.0.2",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-redux": "^5.0.6",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.1.2",
+    "react-router-redux": "^5.0.0-alpha.6",
+    "react-scripts": "1.0.11",
+    "redux": "^3.7.2",
+    "redux-promise": "^0.5.3",
+    "sly-scrolling": "^1.6.1"
+  },
+  "scripts": {
+    "start-js": "react-scripts start",
+    "start": "npm-run-all -p watch-css start-js",
+    "build": "npm run build-css && react-scripts build",
+    "build-css": "node-sass-chokidar src/ -o src/",
+    "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "react-vt": "^0.1.1"
+  }
+}
