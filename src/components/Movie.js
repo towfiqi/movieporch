@@ -17,14 +17,14 @@ class Movie extends React.Component {
     componentDidMount() {
         const movie = this.props.movie;
         const year = movie.release_date.split('-')[0];
-        const rating = axios.get(`https://theimdbapi.org/api/find/movie?title=${movie.title}&year=${year}`).then( (results)=> {
-            if(results.data){
-                //console.log(results.data[0]);
-                const rate = results.data[0] ? results.data[0].rating : '';
-                return this.setState({rating : rate });
-            }
+        // const rating = axios.get(`https://theimdbapi.org/api/find/movie?title=${movie.title}&year=${year}`).then( (results)=> {
+        //     if(results.data){
+        //         //console.log(results.data[0]);
+        //         const rate = results.data[0] ? results.data[0].rating : '';
+        //         return this.setState({rating : rate });
+        //     }
 
-        });
+        // });
         
     }
 

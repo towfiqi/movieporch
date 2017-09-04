@@ -11,6 +11,7 @@ import App from './App';
 import BoxOffice from './components/BoxOffice';
 import Single from './components/Single';
 import Header from './components/header';
+import TopMovies from './components/TopMovies';
 import './App.scss';
 import './assets/fonts/linearicons.css';
 import registerServiceWorker from './registerServiceWorker';
@@ -25,6 +26,7 @@ const root = (
                 <Route component={App}/>
                 <Switch>
                     <Route exact path="/" component={BoxOffice} />
+                    <Route exact path="/top200" component={TopMovies} />
                     <Route path="/movie/:movieID" component={Single} />
                 </Switch>
             </div>
