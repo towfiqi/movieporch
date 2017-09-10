@@ -15,15 +15,53 @@ export function fetchData(query, pagecount){
 }
 
 
-//update BoxOffice
-// export function updateBoxOffice(boxOffice){
-//     return {
-//         type: "SORT_DATA",
-//         payload: boxOffice
-//     }
-// }
+//update Settings
+export function updateSettings(settings){
+   //console.log(settings);
+    return {
+        type: "UPDATE_SETTINGS",
+        payload: settings
+    }
+}
 
-// //update Categories
+export function fetchUserMovies(imdbId, allMovies){
+    //console.log(imdbId);
+    const request = axios.get(`http://api.themoviedb.org/3/find/${imdbId}?api_key=${tmdbkey}&language=en-US&external_source=imdb_id`);
+
+     return {
+         type: "FETCH_MOVIE",
+         //payload: {request, allMovies},
+         payload: request,
+         meta: {allMovies}
+     }
+ }
+
+ export function resetImportCounter(){
+     return {
+        type: "RESET_IMPORT_COUNTER",
+        payload: 0
+     }
+ }
+
+ export function syncImdbMovies(imdbId){
+    const request = axios.get(`http://cors-anywhere.herokuapp.com/http://rss.imdb.com/user/ur14774441/ratings/`);
+
+    return {
+       type: "SYNC_USER_MOVIES",
+       payload: request
+    }
+}
+
+export function clearSyncJob(index){
+
+    return {
+       type: "RESET_IMDB_SYNC",
+       payload: index
+    }
+}
+
+
+//update Categories
 // export function updateCategories(){
     
 // }

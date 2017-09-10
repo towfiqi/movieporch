@@ -27,6 +27,7 @@ class TopMovies extends React.Component {
 
     currentYear = new Date().getFullYear();
 
+    
     fetchTopMovies =(genres, year=this.currentYear, page=1)=> {
 
         if(genres){genres = `&with_genres=${genres}`}else{ genres=''}

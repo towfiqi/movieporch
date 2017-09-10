@@ -106,8 +106,7 @@ class BoxOffice extends Component {
 function mapStateToProps(state){
   return {
      boxOffice: state.boxOffice,
-     categories: state.categories,
-     topMovies: state.topMovies
+     settings: state.settings
   }
  }
  

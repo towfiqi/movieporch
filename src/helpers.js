@@ -36,7 +36,7 @@ export function get_genre_name(id){
 }
 
 export function truncString(str, max, add){
-    add = add || '...';
+    add = add || '';
     return (typeof str === 'string' && str.length > max ? str.substring(0,max)+add : str);
  };
 
@@ -58,6 +58,16 @@ export function truncString(str, max, add){
     return month[index];
  }
 
+ export function formatDate(date, showMonth){
+    var d = new Date(date);
+    var Y = d.getFullYear();
+    var M = d.getMonth() + 1;
+    var D = d.getDate();
+    M = showMonth === true ? getMonth(M) : M ;
+
+    return `${D} ${M} ${Y}`;
+ }
+
  export function TopscrollTo() {
     if(window.scrollY!=0){
         setTimeout(function() {
@@ -65,4 +75,57 @@ export function truncString(str, max, add){
             TopscrollTo();
         }, 5);
     }
+}
+
+export function chunk(arr, chunkSize) {
+    var R = [];
+    for (var i=0,len=arr.length; i<len; i+=chunkSize)
+      R.push(arr.slice(i,i+chunkSize));
+    return R;
+}
+
+export function uploadImage (file, callback) {
+    
+    // Ensure it's an image
+    if(file.type.match(/image.*/)) {
+        console.log('An image has been loaded');
+
+        // Load the image
+        var reader = new FileReader();
+        reader.onload = function (readerEvent) {
+            var image = new Image();
+            image.onload = function (imageEvent) {
+
+                // Resize the image
+                var canvas = document.createElement('canvas'),
+                    max_size = 160,// TODO : pull max size from a site config
+                    width = image.width,
+                    height = image.height;
+                    if (width > height) {
+                        if (width > max_size) {
+                            height *= max_size / width;
+                            width = max_size;
+                        }
+                    } else {
+                        if (height > max_size) {
+                            width *= max_size / height;
+                            height = max_size;
+                        }
+                    }
+                canvas.width = width;
+                canvas.height = height;
+                canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+                var dataUrl = canvas.toDataURL('image/jpeg');
+                console.log(dataUrl);
+                
+                callback(dataUrl);
+
+
+            }
+            image.src = readerEvent.target.result;
+        }
+        reader.readAsDataURL(file);
+        
+    }
+            
 }

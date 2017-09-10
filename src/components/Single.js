@@ -1,9 +1,11 @@
 import React from 'react';
+import {connect} from 'react-redux';
 import axios from 'axios';
-import {getMonth} from '../helpers';
+import {getMonth, formatDate, truncString} from '../helpers';
 import {tmdbkey} from '../keys'
 import ISO6391 from 'iso-639-1';
 import MovieGrid from './MovieGrid';
+import Modal from './Modal';
 import {Link} from 'react-router-dom';
 import {TopscrollTo} from '../helpers'
 const jQuery = require('jquery');
@@ -31,7 +33,10 @@ class Single extends React.Component {
             actors: [],
             directors: [],
             writers: [],
-            trailer: []
+            trailer: [],
+            myrating: '',
+            rated_on: '',
+            show_full_overview: false
         }
     }
 
@@ -39,28 +44,45 @@ class Single extends React.Component {
         
         window.scrollTo(0, 0);
         this.fetchMovieData(this.props.match.params.movieID);
-
        
+    }
+
+
+    fetchUserRating = (movieId)=> {
+        //Check and see if the User Rated this Movie. If did, assign the rating to state
+        const allMovies = this.props.settings.allMovies || [];
+        
+            allMovies.forEach((item)=>{
+                if(item.id === movieId){
+                    var rated_on = formatDate(item.created, true);
+                    this.setState({myrating:item.myrating, rated_on: rated_on})
+                }
+            });
+        
     }
 
 
     componentWillReceiveProps(nextProps){
         if (nextProps.match.params.movieID !== this.props.match.params.movieID) {
             //console.log('Not Same!');
+            this.setState({myrating:''});
             this.fetchMovieData(nextProps.match.params.movieID);
             //Scroll toTop
             TopscrollTo();
             this.callSly(true);
+
+            console.log('Movie props Loaded!');
         }
+        console.log('####THE PROPS:',nextProps);
 
     }
 
 
     callSly = (reload) => {
-        console.log('@@@### BEFORE: Movie Recommendations Loaded!!');
+        //console.log('@@@### BEFORE: Movie Recommendations Loaded!!');
 
         if(this.state.recommendations.length > 0){
-            console.log('Movie Recommendations Loaded!!');
+            //console.log('Movie Recommendations Loaded!!');
             //SLY Options
             var options = { horizontal: 1, itemNav: 'basic', smart: 1, activateOn: 'click', mouseDragging: 1, touchDragging: 1, releaseSwing: 1, 
             startAt: 0, scrollBy: 0, activatePageOn: 'click', speed: 300,  elasticBounds: 1, dragHandle: 1, dynamicHandle: 1, clickBar: 1, };
@@ -85,11 +107,16 @@ class Single extends React.Component {
         const request = axios.get(`https://api.themoviedb.org/3/movie/${movieID}?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
             console.log(results.data);
             this.setState(results.data);
+
+            this.fetchUserRating(this.state.id);
+
+
         }).then( (results)=> {
             const recommendation = axios.get(`https://api.themoviedb.org/3/movie/${movieID}/similar?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
             const filteredRecomm = results.data.results.splice(0, 6);
             this.setState({recommendations: filteredRecomm});
             this.callSly(); 
+
             });
         }).then( (results)=> {
             const cast = axios.get(`https://api.themoviedb.org/3/movie/${movieID}/credits?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
@@ -163,7 +190,11 @@ class Single extends React.Component {
         }
     }
     
+    showFullDesc = () => {  this.setState({show_full_overview: true}); }
 
+    hideModal = () => {  this.setState({show_full_overview: false});  }
+
+    
     render(){
         const backdrop = this.state.backdrop_path ? <img className="cover-photo" src={`https://image.tmdb.org/t/p/w1000/${this.state.backdrop_path}`} alt={this.state.title} /> : '';
         const year = this.state.release_date.split('-')[0];
@@ -177,10 +208,15 @@ class Single extends React.Component {
         const trailer_counter = this.state.trailer.length? <div className="trailer_counter">1/{this.state.trailer.length}</div> : '';
         const recomm = this.state.recommendations.length > 0 ? <MovieGrid id={"recommended-movies"} title="Similar Movies" movies={this.state.recommendations} /> : <p>No Recommendataions Found for this Movie!</p>
         const _director = this.state.directors.length > 1 ? 'Directors' : 'Director' ;
-        
-        
+        const hasMyRating = this.state.myrating ? 'user_rated' : '';
+        const userRating = this.state.myrating ? this.state.myrating : 'N/R'; 
+        const ratedOn = this.state.rated_on ? <span className="rated_on">Rated On: {this.state.rated_on}</span> : ''
+        const descButton = this.state.overview && this.state.overview.length > 350 ? <span className="descButton" onClick={()=> this.showFullDesc()}>...</span> : ''
+        const showFullOverview = this.state.show_full_overview === true ? <p><strong>Overview:</strong>{this.state.overview}</p> : '';
+        const visibility = this.state.show_full_overview === true? true : false;
+
         return(
-            <div id="single-movie" className="single">
+            <div id="single-movie" className={`single ${hasMyRating}`}>
                 <div className="movie-cover">
                     <div className="movie-header">
                         <div className="movie-header-left">
@@ -193,7 +229,7 @@ class Single extends React.Component {
                                 {length}
                                 {genres}
                             </div>
-                            <p>{this.state.overview}</p>
+                            <p>{truncString(this.state.overview, 350, '')}{descButton}</p>
 
                             <div className={`creators ${_director ==='Director'? 'one_director': ''}`}>
                                 {this.state.directors ? _director : ''} : {Object.keys(this.state.directors).map( (drctr, idx)=> {
@@ -202,9 +238,32 @@ class Single extends React.Component {
                             </div>
 
                             <div className="movie-ratings">
-                                <div className="imdb_rating"><span>{this.state.imdb_rating}</span><div className="vote_count"><a href={`http://imdb.com/title/${this.state.imdb_id}`} target="_blank"><span>{this.state.imdb_votes} votes</span>IMDB Rating</a></div></div>
-                                <div className="tmdb_rating"><span>{this.state.vote_average}</span><div className="vote_count"><a href={`https://www.themoviedb.org/movie/${this.state.id}`} target="_blank"><span>{this.state.vote_count} votes</span>TMDB Rating</a></div></div>
-                                <div className="your_rating"><span>N/A</span><div className="vote_count">Your Rating</div></div>
+                                <div className="imdb_rating">
+                                    <span>{this.state.imdb_rating}</span>
+                                    <div className="vote_count">
+                                        <a href={`http://imdb.com/title/${this.state.imdb_id}`} target="_blank">
+                                        <span>{this.state.imdb_votes} votes</span>IMDB Rating
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div className="tmdb_rating">
+                                    <span>{this.state.vote_average}</span>
+                                    <div className="vote_count">
+                                        <a href={`https://www.themoviedb.org/movie/${this.state.id}`} target="_blank">
+                                        <span>{this.state.vote_count} votes</span>TMDB Rating
+                                        </a>
+                                    </div>
+                                </div>
+                                <div className="your_rating">
+                                    <div className="user_rating">
+                                        <span>{userRating}</span>
+                                    </div>
+                                    <div className="vote_count">
+                                        <a href={`http://imdb.com/title/${this.state.imdb_id}`} target="_blank">{ratedOn}</a> Your Rating
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 
@@ -273,6 +332,8 @@ class Single extends React.Component {
 
                     
                 </div>
+                
+                <Modal content={showFullOverview} visible={visibility} hideModal={this.hideModal} /> 
 
             </div>
         );
@@ -290,5 +351,10 @@ function Trailer(props) {
         </div>
     );
 }
+function mapStateToProps(state){
+    return {
+       settings: state.settings,
+    }
+   }
 
-export default Single;
+export default connect(mapStateToProps)(Single);

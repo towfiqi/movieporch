@@ -5,12 +5,13 @@ import {createBrowserHistory} from 'history';
 import { ConnectedRouter, routerReducer, routerMiddleware } from 'react-router-redux';
 import promise from 'redux-promise';
 import rootReducer from './reducers/index';
+import {loadState, saveState} from './localStorage';
 //import {boxOffice, users, topMovies, genres, routing} from './data/defaultData'
 const history = createBrowserHistory();
 
 
 //Import Default Data
-const defaultState = {}
+const persistedState = loadState()
  var historyMW = routerMiddleware(history);
  let middleware = [promise, historyMW]
 
@@ -20,7 +21,11 @@ const enhancers = compose(
     window.devToolsExtension ? window.devToolsExtension() : f => f
 );
 
-const store = createStore(rootReducer,defaultState, enhancers);
+const store = createStore(rootReducer,persistedState, enhancers);
+
+store.subscribe(()=> {
+    saveState({settings:store.getState().settings})
+})
 
 //export const history = syncHistoryWithStore(browserHistory, store);
 
