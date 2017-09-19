@@ -1,5 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
+import * as actionCreators from '../actions/actionCreators';
+import {bindActionCreators} from 'redux';
 import axios from 'axios';
 import {getMonth, formatDate, truncString} from '../helpers';
 import {tmdbkey} from '../keys'
@@ -7,7 +9,7 @@ import ISO6391 from 'iso-639-1';
 import MovieGrid from './MovieGrid';
 import Modal from './Modal';
 import {Link} from 'react-router-dom';
-import {TopscrollTo} from '../helpers'
+import {TopscrollTo} from '../helpers';
 const jQuery = require('jquery');
 const Sly = require('@rq/sly-scrolling')(jQuery, window);
 
@@ -36,15 +38,50 @@ class Single extends React.Component {
             trailer: [],
             myrating: '',
             rated_on: '',
-            show_full_overview: false
+            show_full_overview: false,
+            watchList:false
         }
     }
 
-    componentWillMount(){
-        
+
+    componentDidMount(){
         window.scrollTo(0, 0);
         this.fetchMovieData(this.props.match.params.movieID);
-       
+
+        //Parrallax
+         window.addEventListener("scroll", function(event){
+            jQuery('.cover-photo').css({top: - window.pageYOffset / 3 +'px'})
+        });
+
+        
+    }
+
+    componentWillReceiveProps(nextProps){
+        if (nextProps.match.params.movieID !== this.props.match.params.movieID) {
+
+            this.setState({myrating:''});
+            this.fetchMovieData(nextProps.match.params.movieID);
+            //Scroll toTop
+            TopscrollTo();
+            this.callSly(true);
+
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState){
+        
+        //When Movie is removed from Watchlist Auto Change the Heart Button to Delete button on All Movies instance in current page.
+        if(prevState.watchList === true){
+            setTimeout( ()=> {
+                if(this.state.id === this.props.watchList.justRemoved){
+                    //console.log('Deleted Movie: ', this.state.title, this.state);
+                    if(this.state.watchList === true){
+                        this.setState({watchList: false});
+                    }
+                }
+            }, 1000);
+        }
+        
     }
 
 
@@ -62,19 +99,13 @@ class Single extends React.Component {
     }
 
 
-    componentWillReceiveProps(nextProps){
-        if (nextProps.match.params.movieID !== this.props.match.params.movieID) {
-            //console.log('Not Same!');
-            this.setState({myrating:''});
-            this.fetchMovieData(nextProps.match.params.movieID);
-            //Scroll toTop
-            TopscrollTo();
-            this.callSly(true);
-
-            console.log('Movie props Loaded!');
-        }
-        console.log('####THE PROPS:',nextProps);
-
+    inWatchList = (movieId) =>{
+        const WLMovies = this.props.watchList.watching;
+        WLMovies.forEach((item)=>{
+            if(item.id === movieId){
+                this.setState({watchList: true});
+            }
+        });
     }
 
 
@@ -101,34 +132,31 @@ class Single extends React.Component {
 
     fetchMovieData = (movieID) => {
 
-        //const movieID = this.props.match.params.movieID;
-        const year = this.state.release_date.split('-')[0];
-
-        const request = axios.get(`https://api.themoviedb.org/3/movie/${movieID}?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
+        axios.get(`https://api.themoviedb.org/3/movie/${movieID}?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
             console.log(results.data);
             this.setState(results.data);
 
             this.fetchUserRating(this.state.id);
-
+            this.inWatchList(this.state.id);
 
         }).then( (results)=> {
-            const recommendation = axios.get(`https://api.themoviedb.org/3/movie/${movieID}/similar?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
+            axios.get(`https://api.themoviedb.org/3/movie/${movieID}/similar?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
             const filteredRecomm = results.data.results.splice(0, 6);
             this.setState({recommendations: filteredRecomm});
             this.callSly(); 
 
             });
         }).then( (results)=> {
-            const cast = axios.get(`https://api.themoviedb.org/3/movie/${movieID}/credits?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
+            axios.get(`https://api.themoviedb.org/3/movie/${movieID}/credits?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
                 //const actors = results.data.results;
-                const actors = results.data.cast.splice(0, 10);
+                const actors = results.data.cast.splice(0, 12);
                 const directors = results.data.crew.filter( (crew)=> { return crew['job'] === 'Director' });
 
                 this.setState({actors: actors, directors: directors});
             });
         }).then( (results)=> {
 
-            const imdb = axios.get(`https://www.theimdbapi.org/api/movie?movie_id=${this.state.imdb_id}`).then( (results)=> {
+            axios.get(`https://www.theimdbapi.org/api/movie?movie_id=${this.state.imdb_id}`).then( (results)=> {
                     if(results.data){
                         console.log(results.data);
                         const imdb_rating = results.data ? results.data.rating : '';
@@ -151,7 +179,7 @@ class Single extends React.Component {
     playTrailer =() => {
         this.refs.trailerBox.classList.add('active');
         const movieID = this.props.match.params.movieID;
-        const getTrailer = axios.get(`https://api.themoviedb.org/3/movie/${movieID}/videos?api_key=${tmdbkey}&language=en-US`).then( (results)=> {
+        axios.get(`https://api.themoviedb.org/3/movie/${movieID}/videos?api_key=${tmdbkey}&language=en-US`).then( (results)=> {
             if(results.data){
                 console.log(results.data.results);
                 const trailer = results.data.results? results.data.results : '';
@@ -172,7 +200,7 @@ class Single extends React.Component {
         const trailerBox = this.refs.trailerBox;
         const counterBox = trailerBox.querySelector('.trailer_counter');
         const current = trailerBox.querySelectorAll('.active')[0];
-        const cid = parseInt(current.getAttribute('data-id'));
+        const cid = Number(current.getAttribute('data-id'));
         const limit = this.state.trailer.length;
         trailerBox.querySelectorAll('.active')[0].classList.remove('active');
 
@@ -193,7 +221,28 @@ class Single extends React.Component {
     showFullDesc = () => {  this.setState({show_full_overview: true}); }
 
     hideModal = () => {  this.setState({show_full_overview: false});  }
+    
+    addToWatchList = ()=> {
+        const movie = this.state;
+        var theMovie = [{adult: movie.adult, backdrop_path: movie.backdrop_path, genre_ids: movie.genre_ids, id: movie.id,
+            original_language: movie.original_language,original_title: movie.original_title, overview: movie.overview, popularity: movie.popularity,
+            poster_path:movie.poster_path, release_date: movie.release_date, title: movie.title, video: movie.video, vote_average: movie.vote_average,
+            vote_count: movie.vote_count}];
 
+        //console.log(theMovie);
+        this.props.addToWatchlist(theMovie);
+        this.setState({watchList: true});
+    }
+
+    removeFromWatchList = ()=> {
+        var index;
+        const WLMovies = this.props.watchList.watching;
+        WLMovies.filter( (item)=> { return item.id === this.state.id }).map((item, idx)=>{  return index = idx; });
+        //console.log(index);
+        this.setState({watchList: false});
+        this.props.removeFromWatchlist(index);
+        
+    }
     
     render(){
         const backdrop = this.state.backdrop_path ? <img className="cover-photo" src={`https://image.tmdb.org/t/p/w1000/${this.state.backdrop_path}`} alt={this.state.title} /> : '';
@@ -203,7 +252,7 @@ class Single extends React.Component {
         const length = this.state.runtime ? <div className="length"><i className="lnr lnr-clock"></i> {this.state.runtime} mins</div> : '';
         const genres = this.state.genres? <div className="genres"><i className="lnr lnr-list"></i> { this.state.genres.slice(0, 3).map( (genre)=> { return (<span key={genre.id}>{genre.name} </span>) }) }</div> : '';
         const rdate = this.state.release_date.split('-');
-        const release_date = this.state.release_date ?  <div className="release_date"><i className="lnr lnr-calendar-full"></i> {`${rdate[2]} ${getMonth(parseInt(rdate[1], 10))} ${rdate[0]}`}</div>: '';
+        const release_date = this.state.release_date ?  <div className="release_date"><i className="lnr lnr-calendar-full"></i> {`${rdate[2]} ${getMonth(Number(rdate[1], 10))} ${rdate[0]}`}</div>: '';
         const play_button = <span onClick={this.playTrailer} className="trailer_button"><i></i> Watch Trailer</span>
         const trailer_counter = this.state.trailer.length? <div className="trailer_counter">1/{this.state.trailer.length}</div> : '';
         const recomm = this.state.recommendations.length > 0 ? <MovieGrid id={"recommended-movies"} title="Similar Movies" movies={this.state.recommendations} /> : <p>No Recommendataions Found for this Movie!</p>
@@ -214,13 +263,17 @@ class Single extends React.Component {
         const descButton = this.state.overview && this.state.overview.length > 350 ? <span className="descButton" onClick={()=> this.showFullDesc()}>...</span> : ''
         const showFullOverview = this.state.show_full_overview === true ? <p><strong>Overview:</strong>{this.state.overview}</p> : '';
         const visibility = this.state.show_full_overview === true? true : false;
+        
+        const watchListButton = this.state.watchList === false ? <a className="add-watchlist-button" onClick={ ()=> this.addToWatchList()}><i className="lnr lnr-heart"></i></a> : <a className="remove-watchlist-button" onClick={ ()=> this.removeFromWatchList()}><i className="lnr lnr-heart"></i></a>;
+        const watchClass = this.state.watchList === true ? 'watching' : '';
+
 
         return(
             <div id="single-movie" className={`single ${hasMyRating}`}>
                 <div className="movie-cover">
-                    <div className="movie-header">
+                    <div className={`movie-header ${watchClass}`}>
                         <div className="movie-header-left">
-                            <div className="movie-poster">{play_button}{poster}</div>
+                            <div className="movie-poster">{watchListButton}{play_button}{poster}</div>
                         </div>
                         <div className="movie-header-right">
                             {title}
@@ -233,7 +286,7 @@ class Single extends React.Component {
 
                             <div className={`creators ${_director ==='Director'? 'one_director': ''}`}>
                                 {this.state.directors ? _director : ''} : {Object.keys(this.state.directors).map( (drctr, idx)=> {
-                                    return <span key={idx}>{this.state.directors[drctr].name}</span>
+                                    return <Link key={idx} to={`/people/${this.state.directors[drctr].id}`}><span>{this.state.directors[drctr].name}</span></Link>
                                 })}
                             </div>
 
@@ -291,7 +344,7 @@ class Single extends React.Component {
                         
                     </div>
 
-                    {/* Facts */}
+                    {/* CAST */}
                     <div className="movie-cast">
                         <h2>CAST</h2>
                         <ul>
@@ -299,7 +352,7 @@ class Single extends React.Component {
                                 Object.keys(this.state.actors).map( (actor, idx)=> {
                                     return (
                                         <li key={idx}>
-                                            <div className="profile_holder">{this.state.actors[actor].profile_path ? <img src={`https://image.tmdb.org/t/p/w150/${this.state.actors[actor].profile_path}`} alt={this.state.actors[actor].name} />: ''}</div>
+                                            <div className="profile_holder">{this.state.actors[actor].profile_path ? <Link to={`/people/${this.state.actors[actor].id}`}><img src={`https://image.tmdb.org/t/p/w150/${this.state.actors[actor].profile_path}`} alt={this.state.actors[actor].name} /></Link>: ''}</div>
                                             {this.state.actors[actor].name}
                                             <span>{this.state.actors[actor].character}</span>
                                         </li>
@@ -354,7 +407,12 @@ function Trailer(props) {
 function mapStateToProps(state){
     return {
        settings: state.settings,
+       watchList: state.watchList,
     }
    }
 
-export default connect(mapStateToProps)(Single);
+function mapDispatchToProps(dispatch){
+    return bindActionCreators(actionCreators, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Single);

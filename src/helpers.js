@@ -6,7 +6,7 @@ export function boxoffice_time(index){
     var D = d.getDate();
 
     if(index === 'start'){
-        var M = M - 1;
+        M = M - 1;
     }
 
     return `${Y}-${M}-${D}`;
@@ -69,7 +69,7 @@ export function truncString(str, max, add){
  }
 
  export function TopscrollTo() {
-    if(window.scrollY!=0){
+    if(window.scrollY !== 0){
         setTimeout(function() {
            window.scrollTo(0,window.scrollY-30);
             TopscrollTo();
@@ -128,4 +128,11 @@ export function uploadImage (file, callback) {
         
     }
             
+}
+
+export function calculate_age(dob) { 
+    var diff_ms = Date.now() - dob.getTime();
+    var age_dt = new Date(diff_ms); 
+  
+    return Math.abs(age_dt.getUTCFullYear() - 1970);
 }

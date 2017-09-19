@@ -1,5 +1,5 @@
 import React from 'react';
-import {NavLink, Link} from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import debounce from 'lodash/debounce';
 import {get_genre_name} from '../helpers';
 import {tmdbkey} from '../keys'
@@ -7,7 +7,7 @@ import axios from 'axios';
 const jQuery = require('jquery');
 const Sly = require('@rq/sly-scrolling')(jQuery, window);
 
-class SearchBar extends React.Component {
+class SearchBar extends React.PureComponent {
     
     constructor(){
         super();
@@ -15,7 +15,7 @@ class SearchBar extends React.Component {
         this.state = {search_term: '', search_results:[]}
     }
 
-    componentWillMount(){
+    componentDidMount(){
         this.searchMovies = debounce(function(){  console.log('Debounced:', this.state.search_term); this.getSearchItems();   }, 350);
     }
 
@@ -94,7 +94,7 @@ class SearchBar extends React.Component {
                             this.state.search_results.map( (movie, idx)=> {
                                 return (
                                     <div className="movie-search" key={movie.id + idx} >
-                                        <div className="poster_wrap">{movie.poster_path? <img src={`https://image.tmdb.org/t/p/w90/${movie.poster_path}`}/>: ''}</div>
+                                        <div className="poster_wrap">{movie.poster_path? <img src={`https://image.tmdb.org/t/p/w90/${movie.poster_path}`} alt=""/>: ''}</div>
                                         <div className="search-movie-content">
                                             <Link to={`/movie/${movie.id}`} onClick={this.clearSearch}>
                                                 <div className="search-movie-title" >{movie.title} ({movie.release_date.split('-')[0]})</div>

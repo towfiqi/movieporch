@@ -6,7 +6,6 @@ import {uploadImage} from '../helpers';
 import Papa from 'papaparse';
 import avatar from '../assets/user.png';
 
-
 class Settings extends React.Component{
 
     constructor(){
@@ -15,15 +14,6 @@ class Settings extends React.Component{
     }
 
 
-    componentWillMount(){
-
-    }
-
-    componentDidMount(){
-        //this.props.updateSettings(this.state);
-
-        console.log(this.props.settings);
-    }
 
     saveSettings = (e)=> {
         e.preventDefault();
@@ -92,11 +82,10 @@ class Settings extends React.Component{
             return [];
         }
         var filterarr = arr[0].splice(1, 5000);
-        filterarr = filterarr.filter( (movie)=> { return movie[6] === 'Feature Film' ||  movie[6] === 'Documentary'});
         var newArr = [];
 
-        filterarr.map((movie)=> {
-            newArr.push({
+        filterarr.filter( (movie)=> { return movie[6] === 'Feature Film' ||  movie[6] === 'Documentary'}).map((movie)=> {
+            return newArr.push({
                 imdb: movie[1],
                 title:movie[5],
                 year: movie[11],
@@ -126,8 +115,8 @@ class Settings extends React.Component{
     }
 
     render(){
-        const ppimg = this.props.settings.currentUser.photo ? <img src={this.props.settings.currentUser.photo} /> : <img src={avatar} alt="" />;
-        const ppname = this.props.settings.currentUser.name ? <span>{this.props.settings.currentUser.name}</span> : '';
+        const ppimg = this.props.settings.currentUser.photo ? <img src={this.props.settings.currentUser.photo} alt="" /> : <img src={avatar} alt="" />;
+
         return(
             <div id="settings-page">
                 <div className="page_wrap">
@@ -158,6 +147,7 @@ function mapStateToProps(state){
     return {
        boxOffice: state.boxOffice,
        settings: state.settings,
+       watchList: state.watchList,
     }
    }
    

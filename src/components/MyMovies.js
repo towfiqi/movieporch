@@ -8,11 +8,12 @@ import jQuery from 'jquery';
 import _ from 'lodash';
 import Modal from './Modal';
 import avatar from '../assets/user.png';
-import step1img from '../assets/step1.jpg'
-import step2img from '../assets/step2.jpg'
-import step3img from '../assets/step3.jpg'
-import step4img from '../assets/step4.jpg'
-import step5img from '../assets/step5.jpg'
+import step1img from '../assets/step1.jpg';
+import step2img from '../assets/step2.jpg';
+import step3img from '../assets/step3.jpg';
+import step4img from '../assets/step4.jpg';
+import step5img from '../assets/step5.jpg';
+
 
 class MyMovies extends React.Component {
     constructor(){
@@ -32,7 +33,7 @@ class MyMovies extends React.Component {
 
 
         jQuery(window).scroll(() => {
-            if (jQuery(window).scrollTop() == jQuery(document).height() - jQuery(window).height()) {
+            if (jQuery(window).scrollTop() === jQuery(document).height() - jQuery(window).height()) {
               if(this.state.myMovies.length < this.props.settings.allMovies.length){
                 
                     this.loadMovies(this.state.currentPage + 1);
@@ -40,6 +41,8 @@ class MyMovies extends React.Component {
               }
             }
         });
+
+
     }
 
     componentWillReceiveProps(nextProps){
@@ -58,9 +61,12 @@ class MyMovies extends React.Component {
 
                     this.synceUserMoveis(movie, idx, allCurrentMovies).then( (syncedMovies)=> {
                         const syncedState = [allCurrentMovies[idx], ...this.state.myMovies];
-                        this.setState({myMovies: syncedState});
-                    }).then( ()=> {
-                        this.props.resetImportCounter();
+                        return _.uniq(syncedState, 'id');
+                        
+                    }).then( (syncedState)=> {
+
+                        this.setState({myMovies: syncedState, syncMessage: ''});
+                        return this.props.resetImportCounter();
                     }); 
                     
             });
@@ -85,7 +91,7 @@ class MyMovies extends React.Component {
     loadMovies = (index)=> {
         var myMovies = this.props.settings.allMovies || [];
         var chunked = chunk(myMovies, 40);
-        var index = index === 0 ? index : this.state.currentPage + 1;
+        index = index === 0 ? index : this.state.currentPage + 1;
         //console.log(chunked[index]);
         if(myMovies.length > 0){
             var newMovies = [...this.state.myMovies, ...chunked[index]]
@@ -97,9 +103,11 @@ class MyMovies extends React.Component {
     handleSyncMovies = ()=> {
         var imdbid = this.props.settings.currentUser.imdbid ? this.props.settings.currentUser.imdbid : '';
         if(!imdbid){
-            return
+            this.setState({syncMessage: 'You did not add your IMDB account ID. Please add it in the Settings Page.'});
         }
 
+        this.setState({syncMessage: 'Hold On, Your Movies are syncing with IMDB.'});
+        
         this.props.syncImdbMovies(imdbid);
         console.log('Sync Function Triggered!');
 
@@ -108,7 +116,7 @@ class MyMovies extends React.Component {
     getUserGenre = ()=> {
         var myMovies = this.props.settings.allMovies || [];
         var allgenres = [];
-        if(myMovies.length == 0){
+        if(myMovies.length === 0){
             return undefined;
         }
 
@@ -149,7 +157,7 @@ class MyMovies extends React.Component {
     moviesThisYear = () =>{
         var myMovies = this.props.settings.allMovies || [];
         var currentYear = new Date().getFullYear();
-        if(myMovies.length == 0){
+        if(myMovies.length === 0){
             return 'No';
         }
         
@@ -182,7 +190,7 @@ class MyMovies extends React.Component {
                     </div>
                     <div className="steps_wrap">
                         <div id="step1" className="step current">
-                            <p>Go to <a target="_blank" href="https://www.imdb.com/">imdb.com</a> and then navigate to Your Profile > My Ratings.</p> 
+                            <p>Go to <a rel="noopener noreferrer" target="_blank" href="https://www.imdb.com/">imdb.com</a> and then navigate to Your Profile > My Ratings.</p> 
                             <img alt="Step 1" src={step1img} />
                         </div>
                         <div id="step2" className="step">
@@ -198,7 +206,7 @@ class MyMovies extends React.Component {
                             <img alt="Step 4" src={step4img} />
                         </div>
                         <div id="step5" className="step">
-                            <p>Now go to Movie Porch <a target="_blank" href="http://localhost:3000/settings">Settings Page</a> and insert your IMDB user Id and select ratings.csv in respective Fields and click Save. Your Movies will be imported within a few Minutes.</p>
+                            <p>Now go to Movie Porch <a rel="noopener noreferrer" target="_blank" href="http://localhost:3000/settings">Settings Page</a> and insert your IMDB user Id and select ratings.csv in respective Fields and click Save. Your Movies will be imported within a few Minutes.</p>
                             <img alt="Step 5" src={step5img} />
                         </div>
                     </div>
@@ -211,11 +219,11 @@ class MyMovies extends React.Component {
     renderUserContent = ()=> {
         if(this.props.settings.allMovies.length > 0){
 
-            const ppimg = this.props.settings.currentUser.photo ? <img src={this.props.settings.currentUser.photo} /> : <img src={avatar} alt="" />;
+            const ppimg = this.props.settings.currentUser.photo ? <img src={this.props.settings.currentUser.photo} alt="Avatar" /> : <img src={avatar} alt="Avatar" />;
             const ppname = this.props.settings.currentUser.name ? <span>{this.props.settings.currentUser.name}</span> : '';
             const movieCount = this.props.settings.allMovies ? this.props.settings.allMovies.length : '0';
             const myGenres = this.getUserGenre() || [];
-            const genresLove = myGenres.length > 1 ? get_genre_name(parseInt(myGenres[0][0])) +' & '+ get_genre_name(parseInt(myGenres[1][0])): '??'; 
+            const genresLove = myGenres.length > 1 ? get_genre_name(Number(myGenres[0][0])) +' & '+ get_genre_name(Number(myGenres[1][0])): '??'; 
             const watchedthisYear = this.moviesThisYear() ? this.moviesThisYear() : 'No';
             
             return(
@@ -263,7 +271,7 @@ class MyMovies extends React.Component {
                     <MovieGrid id="my-movie-grid" title="" movies={this.state.myMovies || []} />
                 </div>
 
-                <Modal content={this.state.syncMessage} visible={visibility} hideModal={this.hideModal} /> 
+                <Modal content={theSyncMessage} visible={visibility} hideModal={this.hideModal} /> 
                 
             </div>
 

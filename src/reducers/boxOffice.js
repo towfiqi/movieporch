@@ -16,6 +16,7 @@ function boxOffice(state=initialState , action){
             const rommanceMov = sortMovies(fetchData, 10749);
             const horrorMov = sortMovies(fetchData, 27);
             const fantasyMov = sortMovies(fetchData, 14);
+            const allMov = action.payload.data.results;
             
             console.log('Fetched Data: ',fetchData);
             const curentState = {...state}
@@ -26,7 +27,7 @@ function boxOffice(state=initialState , action){
                 rommanceMovies:[...curentState.rommanceMovies, ...rommanceMov],
                 horrorMovies:[...curentState.horrorMovies, ...horrorMov],
                 fantasyMovies:[...curentState.fantasyMovies, ...fantasyMov],
-                allMovies: [...curentState.allMovies, ...action.payload.data.results],
+                allMovies: [...curentState.allMovies, ...allMov],
                 count: curentState.count + action.payload.data.results.length
             }};
 

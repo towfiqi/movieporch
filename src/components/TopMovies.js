@@ -4,7 +4,12 @@ import {get_genre_name} from '../helpers';
 import axios from 'axios';
 import {tmdbkey} from '../keys';
 import jQuery from 'jquery';
+import Perf from 'react-addons-perf'; /// REMOVE IN PROD-----------
 const Sly = require('@rq/sly-scrolling')(jQuery, window);
+
+if(typeof window !== undefined){
+    window.Perf = Perf;
+}
 
 class TopMovies extends React.Component {
 
@@ -23,6 +28,8 @@ class TopMovies extends React.Component {
 
     componentDidMount(){
         this.callSly();
+        setImmediate( ()=> {   Perf.start();  });
+        setTimeout( ()=> {  Perf.stop();   Perf.printWasted();   },5000);
     }
 
     currentYear = new Date().getFullYear();
@@ -44,7 +51,7 @@ class TopMovies extends React.Component {
 
     filterYears = ()=> {
         var date = new Date();
-        var year = parseInt(date.getFullYear()) + 2;
+        var year = Number(date.getFullYear()) + 2;
         var years = [] 
         for (var i=1930; i < year; i++){
             years.push(i);
@@ -60,12 +67,12 @@ class TopMovies extends React.Component {
         //SLY Options
         var options = { horizontal: 1, itemNav: 'forceCentered', smart: 1, activateOn: 'click', mouseDragging: 1, touchDragging: 1, releaseSwing: 1, 
         startAt: start, scrollBy: 0, activatePageOn: 'click', speed: 300,  elasticBounds: 1, dragHandle: 1, dynamicHandle: 1, clickBar: 1, activateMiddle: 1 };
-        var frame = new Sly('.filter_years_wrap', options).init();
+        new Sly('.filter_years_wrap', options).init();
         
         
         
             jQuery(window).scroll(() => {
-                if (jQuery(window).scrollTop() == jQuery(document).height() - jQuery(window).height()) {
+                if (jQuery(window).scrollTop() === jQuery(document).height() - jQuery(window).height()) {
                   if(this.state.movies.length < 200){
                     this.fetchTopMovies(this.state.genres, this.state.year, this.state.page + 1);
                   }
@@ -109,13 +116,14 @@ class TopMovies extends React.Component {
         const loadedMsg = this.state.movies.length === 200 ? <p>Loaded All 200 Movies!</p> : '' ;
         const filtYear = this.state.year;
         const genresarray = this.state.genres ? this.state.genres.split(',') : [] ;
-        const filtgenres = this.state.genres ? genresarray.map( (genre)=> { return <a key={`filterd-${genre}`}>{get_genre_name(parseInt(genre))}</a> }) : 'All'
-        const clearfilterbutton  = this.state.genres || this.state.year != this.currentYear ? <button onClick={()=> this.clearFilter()}>&times;</button> : '';
+        const filtgenres = this.state.genres ? genresarray.map( (genre)=> { return <a key={`filterd-${genre}`}>{get_genre_name(Number(genre))}</a> }) : 'All'
+        const clearfilterbutton  = this.state.genres || this.state.year !== this.currentYear ? <button onClick={()=> this.clearFilter()}>&times;</button> : '';
         return(
             <div className="topmovies">
-                <div className="topmovies_wrapper">
-                    
-                    <div className="topmovies_header">
+                
+                    <div className="page_header">
+                        <div className="ph_inner">
+                        <div className="topmovies_header">
                         <div className="page_title">
                             <h2><span>TOP</span> 200 MOVIES</h2>
                         </div>
@@ -160,13 +168,16 @@ class TopMovies extends React.Component {
                             </div>
                         </div>
                     </div>
-
-                    <div className="topmovies_movies">
-                        <MovieGrid movies={this.state.movies} title="" />
-                        {loadedMsg}
                     </div>
+                    </div>
+                    
+                    <div className="topmovies_wrapper">
+                        <div className="topmovies_movies">
+                            <MovieGrid movies={this.state.movies} title="" />
+                            {loadedMsg}
+                        </div>
 
-                </div>
+                     </div>
             </div>
         );
     }

@@ -61,31 +61,29 @@ export function clearSyncJob(index){
 }
 
 
-//update Categories
-// export function updateCategories(){
+//Add Movie to WatchList
+export function addToWatchlist(movie){
+
+    return {
+        type: "ADD_TO_WATCHLIST",
+        payload: movie
+    }
+}
+
+//Delete Movie from WatchList
+export function removeFromWatchlist(index){
     
-// }
+    return {
+        type: "REMOVE_FROM_WATCHLIST",
+        payload: index
+    }
+}
 
-
-// //Update Top Movies
-// export function updateTopMovies(){
+//Reset WatchList Notification
+export function resetWatchlistNoti(){
     
-// }
-
-
-// //Add Newuser to DB
-// export function updateUsers(){
-    
-// }
-
-
-// //Update user account
-// export function updateAccount(){
-    
-// }
-
-
-// //Sync user IMDB rating and watchlist when clicked Sync Button
-// export function forceSyncImdb(){
-    
-// }
+    return {
+        type: "RESET_WATCHLIST_NOTIFICATION",
+        payload: ''
+    }
+}

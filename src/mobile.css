@@ -1,0 +1,40 @@
+header {
+  display: none; }
+
+#sidebar {
+  width: 100%;
+  height: auto;
+  top: auto;
+  bottom: 0px;
+  background: rgba(44, 46, 52, 0.74); }
+  #sidebar ul {
+    margin-top: 0; }
+  #sidebar ul li {
+    display: inline-block; }
+  #sidebar ul li a i {
+    font-size: 18px; }
+  #sidebar .logo {
+    display: none; }
+  #sidebar ul li a {
+    padding: 18px; }
+
+.BoxOffice #boxoffice_head {
+  display: none; }
+
+.BoxOffice .boxoffice_content {
+  width: 100%;
+  margin-left: 0; }
+
+.BoxOffice .movie {
+  max-width: 240px;
+  max-height: 380px; }
+
+.BoxOffice .movie img {
+  min-height: 355px; }
+
+.BoxOffice .movie .movie-item-wrap {
+  max-height: 360px; }
+
+.BoxOffice .movie-grid .movie-grid-inner {
+  height: 430px;
+  padding-bottom: 40px; }

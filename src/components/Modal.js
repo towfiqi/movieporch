@@ -1,7 +1,6 @@
 import React from 'react';
-const jQuery = require('jquery');
 
-class Modal extends React.Component {
+class Modal extends React.PureComponent {
 
     hideModal = ()=> {
 

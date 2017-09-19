@@ -14,9 +14,12 @@ import Header from './components/header';
 import TopMovies from './components/TopMovies';
 import Settings from './components/Settings';
 import MyMovies from './components/MyMovies';
+import Trailers from './components/Trailers';
+import People from './components/People';
 import './App.scss';
 import './assets/fonts/linearicons.css';
 import registerServiceWorker from './registerServiceWorker';
+
 
 const history = createBrowserHistory();
 
@@ -30,8 +33,10 @@ const root = (
                     <Route exact path="/" component={BoxOffice} />
                     <Route exact path="/top200" component={TopMovies} />
                     <Route exact path="/settings" component={Settings} />
+                    <Route exact path="/trailers" component={Trailers} />
                     <Route exact path="/my-movies" component={MyMovies} />
                     <Route path="/movie/:movieID" component={Single} />
+                    <Route path="/people/:peopleID" component={People} />
                 </Switch>
             </div>
         </ConnectedRouter>

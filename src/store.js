@@ -2,7 +2,7 @@ import {createStore, compose, applyMiddleware } from 'redux';
 import {createBrowserHistory} from 'history';
 // import {syncHistoryWithStore} from 'react-router-redux';
 //import createHistory from 'history/createHashHistory';
-import { ConnectedRouter, routerReducer, routerMiddleware } from 'react-router-redux';
+import { routerMiddleware } from 'react-router-redux';
 import promise from 'redux-promise';
 import rootReducer from './reducers/index';
 import {loadState, saveState} from './localStorage';
@@ -24,7 +24,7 @@ const enhancers = compose(
 const store = createStore(rootReducer,persistedState, enhancers);
 
 store.subscribe(()=> {
-    saveState({settings:store.getState().settings})
+    saveState({settings:store.getState().settings, watchList:store.getState().watchList})
 })
 
 //export const history = syncHistoryWithStore(browserHistory, store);

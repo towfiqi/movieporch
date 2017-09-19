@@ -3,8 +3,13 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import * as actionCreators from '../actions/actionCreators';
 import MovieGrid from './MovieGrid';
+import Perf from 'react-addons-perf'; /// REMOVE IN PROD-----------
+
 const jQuery = require('jquery');
 const Sly = require('@rq/sly-scrolling')(jQuery, window);
+if(typeof window !== undefined){
+    window.Perf = Perf;
+}
 
 class BoxOffice extends Component {
   
@@ -38,20 +43,23 @@ class BoxOffice extends Component {
     if(this.props.boxOffice.count > 50){
       this.callSly();
     }
+
+    setImmediate( ()=> {   Perf.start();  });
+    setTimeout( ()=> {  Perf.stop();   Perf.printWasted();   },5000);
     
   }
 
   callSly = () => {
 
-   //SLY Options
-   var options = { horizontal: 1, itemNav: 'basic', smart: 1, activateOn: 'click', mouseDragging: 1, touchDragging: 1, releaseSwing: 1, 
-   startAt: 0, scrollBy: 0, activatePageOn: 'click', speed: 300,  elasticBounds: 1, dragHandle: 1, dynamicHandle: 1, clickBar: 1, };
+    //SLY Options
+    var options = { horizontal: 1, itemNav: 'basic', smart: 1, activateOn: 'click', mouseDragging: 1, touchDragging: 1, releaseSwing: 1, 
+    startAt: 0, scrollBy: 0, activatePageOn: 'click', speed: 300,  elasticBounds: 1, dragHandle: 1, dynamicHandle: 1, clickBar: 1, };
 
-  var Heroptions = { horizontal: 1, activateOn: 'click',itemNav: 'forceCentered', smart: 1, activateMiddle: 1, mouseDragging: 1,
-  touchDragging: 1, releaseSwing: 1, moveBy: 600, startAt: 1, scrollBy: 0, activatePageOn: 'click',speed: 300, elasticBounds: 1,
-  dragHandle: 1, dynamicHandle: 1, clickBar: 1,};
+    var Heroptions = { horizontal: 1, activateOn: 'click',itemNav: 'forceCentered', smart: 1, activateMiddle: 1, mouseDragging: 1,
+    touchDragging: 1, releaseSwing: 1, moveBy: 600, startAt: 1, scrollBy: 0, activatePageOn: 'click',speed: 300, elasticBounds: 1,
+    dragHandle: 1, dynamicHandle: 1, clickBar: 1,};
     
-  const topMovSly = jQuery('#box-topMovies .movie-grid-inner');
+    const topMovSly = jQuery('#box-topMovies .movie-grid-inner');
 
     new Sly('#box-action .movie-grid-inner', options).init();
     new Sly('#box-drama .movie-grid-inner', options).init();

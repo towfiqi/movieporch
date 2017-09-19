@@ -11,7 +11,7 @@ function users(state=initialState, action){
         case 'UPDATE_SETTINGS':
 
             var newUpdateState = {...state, ...{currentUser:action.payload.currentUser, allMovies:action.payload.allMovies} };
-            console.log(newUpdateState);
+            //console.log(newUpdateState);
             return newUpdateState;
             
         case 'FETCH_MOVIE':
@@ -33,14 +33,14 @@ function users(state=initialState, action){
             var newSyncMovies = syncUserMovies(action.payload, state);
 
             var syncState = {...state, ...{allMovies:[...newSyncMovies, ...state.allMovies ], moviesToSync:newSyncMovies} };
-            console.log(syncState);
+            //console.log(syncState);
             return syncState;
 
         case 'RESET_IMDB_SYNC':
             var deletedSyncMovies = [ ...state.moviesToSync.slice(0, action.payload), ...state.moviesToSync.slice(action.payload + 1)]
             //console.log(deletedSyncMovies);
             var newsyncState = {...state, ...{moviesToSync:deletedSyncMovies} };
-            console.log(newsyncState);
+            //console.log(newsyncState);
             return newsyncState;
 
 
@@ -95,25 +95,21 @@ function mergedMovie(imdbId, imdbInfo, allMovies){
         //var isString = typeof imdbId === 'string' ? true : false;
         //var currentMovie = allMovies.splice(0, 10).filter( (movie)=> { console.log(movie.imdb, imdbId); return  imdbId === movie.imdb; });
         var newItem = []
-        allMovies.map((item)=>{
-            if(item.imdb !== imdbId){
-                return;
-            }
-            if(item.imdb === imdbId){
-                if(imdbInfo){
-                    item.id = imdbInfo.id;
-                    item.title = imdbInfo.title;
-                    item.poster_path = imdbInfo.poster_path;
-                    item.overview = imdbInfo.overview;
-                    item.genre_ids = imdbInfo.genre_ids;
-                    item.vote_average = imdbInfo.vote_average;
-                    item.release_date = imdbInfo.release_date;
-                }
+        allMovies.filter( (item)=> { return item.imdb === imdbId }).map((item)=>{
 
-                
-                console.log('Movie Found:', item, imdbInfo);
-                return newItem.push(item);
+            if(imdbInfo){
+                item.id = imdbInfo.id;
+                item.title = imdbInfo.title;
+                item.poster_path = imdbInfo.poster_path;
+                item.overview = imdbInfo.overview;
+                item.genre_ids = imdbInfo.genre_ids;
+                item.vote_average = imdbInfo.vote_average;
+                item.release_date = imdbInfo.release_date;
             }
+
+            //console.log('Movie Found:', item, imdbInfo);
+            return newItem.push(item);
+
             
         })
         
