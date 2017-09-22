@@ -21,7 +21,7 @@ class TopMovies extends React.Component {
     }
 
     componentWillMount(){
-
+        document.title =  'Top 200 - Movie Proch';
         this.fetchTopMovies();
         
     }

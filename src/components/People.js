@@ -35,7 +35,7 @@ class People extends React.Component{
             console.log(results.data);
             const {id, imdb_id, birthday, biography, place_of_birth, gender, homepage, name, profile_path} = results.data;
             this.setState({id, imdb_id, birthday, biography, place_of_birth, gender, homepage, name, profile_path});
-
+            document.title =  this.state.name +' - Movie Proch';
 
         }).then( (results)=> {
             axios.get(`https://api.themoviedb.org/3/person/${id}/movie_credits?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
@@ -303,7 +303,8 @@ class People extends React.Component{
 
     render(){
         const descButton = this.state.biography && this.state.biography.length > 350 ? <span className="descButton" onClick={()=> this.showFullDesc()}>...</span> : ''        
-        const name = this.state.name? <h1>{this.state.name}</h1> : '';
+        const name = this.state.name && !navigator.userAgent.match(/Mobi/) ? <h1>{this.state.name}</h1> : '';
+        const mobileName = this.state.name && navigator.userAgent.match(/Mobi/)  ? <h1>{this.state.name}</h1> : '';
         const poster = this.state.profile_path ? <img src={`https://image.tmdb.org/t/p/w300/${this.state.profile_path}`} alt={this.state.name} /> : '';        
         const gallery_button = <span onClick={this.fetchGallery} className="gallery_button"><i className="lnr lnr-picture"></i> Photo Gallery</span>
         const coverPhoto = this.state.backdrop ? <img className="cover-photo" src={`https://image.tmdb.org/t/p/w1000/${this.state.backdrop}`} alt={this.state.name} /> : '';
@@ -338,6 +339,7 @@ class People extends React.Component{
                 <div className="people-cover">
                     <div className={`people-header`}>
                         <div className="people-header-left">
+                            {mobileName}
                             <div className="people-poster">{gallery_button}{poster}</div>
                         </div>
                         <div className="people-header-right">

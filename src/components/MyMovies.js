@@ -23,7 +23,7 @@ class MyMovies extends React.Component {
     }
 
     componentDidMount(){
-
+        document.title =  'My Movies - Movie Proch';
         this.loadMovies(0);
         this.moviesThisYear();
         this.showHideTabs();

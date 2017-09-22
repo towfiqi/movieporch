@@ -34,7 +34,7 @@ class Trailers extends React.Component {
 
 
     componentWillMount(){
-        
+        document.title =  'Latest Trailers - Movie Proch';
         if(this.props.boxOffice.count < 60){
             console.log('Fetching again!');
             const query = `movie/now_playing?language=en-EN`;
@@ -222,12 +222,13 @@ class Trailers extends React.Component {
         const backdrop = this.state.backdrop ? `https://img.youtube.com/vi/${this.state.backdrop}/sddefault.jpg` : ''; 
         const trailerMessage = this.state.trailerMessage ? <p>{this.state.trailerMessage}</p> : '';
         const visibility = this.state.trailerMessage ? true : false;
+        const mobTitle = navigator.userAgent.match(/Mobi/) ? <h1>Latest Trailers</h1> : '';
 
         return(
             <div id="trailers-page">
 
                 <div className="page_wrap">
-
+                    {mobTitle}
                     <div className="trailer-box">
                         <div className="trailer-box-inner">
                             <div className="trailer-video">

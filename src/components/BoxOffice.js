@@ -1,15 +1,12 @@
 import React, { Component } from 'react';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import _ from 'lodash';
 import * as actionCreators from '../actions/actionCreators';
 import MovieGrid from './MovieGrid';
-import Perf from 'react-addons-perf'; /// REMOVE IN PROD-----------
-
 const jQuery = require('jquery');
 const Sly = require('@rq/sly-scrolling')(jQuery, window);
-if(typeof window !== undefined){
-    window.Perf = Perf;
-}
+
 
 class BoxOffice extends Component {
   
@@ -22,6 +19,8 @@ class BoxOffice extends Component {
 
   componentWillMount(){
 
+    document.title = 'Movie Proch - Box Office';
+
     if(this.props.boxOffice.count < 60){
         const query = `movie/now_playing?language=en-EN`;
         this.props.fetchData(query, 1).then( ()=> {
@@ -31,8 +30,15 @@ class BoxOffice extends Component {
         }).then( ()=> {
           return this.props.fetchData(query, 3);
         }).then( ()=> {
-
           this.callSly();
+
+
+          if ( navigator.userAgent.match(/Mobi/) ) {
+            // We are in a mobile device
+            console.log('Is Mobile!', "https://image.tmdb.org/t/p/w300/"+this.props.boxOffice.actionMovies[0].poster_path);
+            //jQuery('#root').addClass('Mobile').css('background-image', 'url(https://image.tmdb.org/t/p/w300/' + this.props.boxOffice.actionMovies[0].poster_path + ')');
+          }
+
         });
     }
   }
@@ -44,8 +50,7 @@ class BoxOffice extends Component {
       this.callSly();
     }
 
-    setImmediate( ()=> {   Perf.start();  });
-    setTimeout( ()=> {  Perf.stop();   Perf.printWasted();   },5000);
+
     
   }
 
@@ -61,14 +66,20 @@ class BoxOffice extends Component {
     
     const topMovSly = jQuery('#box-topMovies .movie-grid-inner');
 
-    new Sly('#box-action .movie-grid-inner', options).init();
+    const actionSly = new Sly('#box-action .movie-grid-inner', options).init();
     new Sly('#box-drama .movie-grid-inner', options).init();
     new Sly('#box-comedy .movie-grid-inner', options).init();
     new Sly('#box-horror .movie-grid-inner', options).init();
     new Sly('#box-fantasy .movie-grid-inner', options).init();
     new Sly('#box-rommantic .movie-grid-inner', options).init();
     
- 
+      if(navigator.userAgent.match(/Mobi/)){
+        actionSly.on('moveEnd', function(){
+          console.log(jQuery('#box-action .movie.active').find('.movie-item-wrap img').attr('src'));
+          
+          //jQuery('.mobileBg img').attr('src', `https://image.tmdb.org/t/p/w300/${this.props.boxOffice.actionMovies[0].poster_path}`)
+        });
+      }
       var topFrame = new Sly(topMovSly, Heroptions, {load: topMovSly.addClass('sly')});
       var heroImg = jQuery('.hero_header img');
       topFrame.on('active', function(){ 
@@ -89,7 +100,9 @@ class BoxOffice extends Component {
 
 
   render() {
+    const mobileBG = navigator.userAgent.match(/Mobi/) && this.props.boxOffice.actionMovies.length > 1 ? <div className="mobileBg"><img src={`https://image.tmdb.org/t/p/w300/${this.props.boxOffice.actionMovies[0].poster_path}`} /></div> : '';
     const topBoMovies = this.props.boxOffice.allMovies.slice(0, 10);
+   
     return (
       <div className="BoxOffice">
           <div id="boxoffice_head">
@@ -102,6 +115,7 @@ class BoxOffice extends Component {
               {this.renderMovies(this.props.boxOffice.rommanceMovies, 'ROMMANTIC MOVIES', 'box-rommantic')}
               {this.renderMovies(this.props.boxOffice.horrorMovies, 'HORROR MOVIES', 'box-horror')}
               {this.renderMovies(this.props.boxOffice.fantasyMovies, 'FANTASY MOVIES', 'box-fantasy')}
+              {mobileBG}
           </div>
       </div>
 

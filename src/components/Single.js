@@ -45,13 +45,16 @@ class Single extends React.Component {
 
 
     componentDidMount(){
+        
         window.scrollTo(0, 0);
         this.fetchMovieData(this.props.match.params.movieID);
 
         //Parrallax
-         window.addEventListener("scroll", function(event){
-            jQuery('.cover-photo').css({top: - window.pageYOffset / 3 +'px'})
-        });
+        if ( !navigator.userAgent.match(/Mobi/) ) {
+            window.addEventListener("scroll", function(event){
+                jQuery('.cover-photo').css({top: - window.pageYOffset / 3 +'px'})
+            });
+        }
 
         
     }
@@ -138,7 +141,7 @@ class Single extends React.Component {
 
             this.fetchUserRating(this.state.id);
             this.inWatchList(this.state.id);
-
+            document.title =  this.state.title +' - Movie Proch';
         }).then( (results)=> {
             axios.get(`https://api.themoviedb.org/3/movie/${movieID}/similar?api_key=${tmdbkey}&language=en-US`).then(( results)=> { 
             const filteredRecomm = results.data.results.splice(0, 6);
@@ -245,9 +248,11 @@ class Single extends React.Component {
     }
     
     render(){
-        const backdrop = this.state.backdrop_path ? <img className="cover-photo" src={`https://image.tmdb.org/t/p/w1000/${this.state.backdrop_path}`} alt={this.state.title} /> : '';
+        const backdropIMG = navigator.userAgent.match(/Mobi/) ? 'https://image.tmdb.org/t/p/w300/'+this.state.poster_path: 'https://image.tmdb.org/t/p/w1000/'+this.state.backdrop_path;
+        const backdrop = this.state.backdrop_path ? <img className="cover-photo" src={backdropIMG} alt={this.state.title} /> : '';
         const year = this.state.release_date.split('-')[0];
-        const title = this.state.title? <h1>{this.state.title} ({year})</h1> : '';
+        const title = this.state.title  && !navigator.userAgent.match(/Mobi/) ? <h1>{this.state.title} ({year})</h1> : '';
+        const mobileTtitle = this.state.title && navigator.userAgent.match(/Mobi/) ? <h1>{this.state.title} ({year})</h1> : '';
         const poster = this.state.poster_path ? <img src={`https://image.tmdb.org/t/p/w300/${this.state.poster_path}`} alt={this.state.title} /> : '';
         const length = this.state.runtime ? <div className="length"><i className="lnr lnr-clock"></i> {this.state.runtime} mins</div> : '';
         const genres = this.state.genres? <div className="genres"><i className="lnr lnr-list"></i> { this.state.genres.slice(0, 3).map( (genre)=> { return (<span key={genre.id}>{genre.name} </span>) }) }</div> : '';
@@ -273,6 +278,7 @@ class Single extends React.Component {
                 <div className="movie-cover">
                     <div className={`movie-header ${watchClass}`}>
                         <div className="movie-header-left">
+                            {mobileTtitle}
                             <div className="movie-poster">{watchListButton}{play_button}{poster}</div>
                         </div>
                         <div className="movie-header-right">

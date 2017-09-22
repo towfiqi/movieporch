@@ -13,7 +13,9 @@ class Settings extends React.Component{
         this.state = {allMovies: [], currentUser:{name:'', email:'', imdbid:''}}
     }
 
-
+    componentWillMount(){
+        document.title =  'Settings - Movie Proch';
+    }
 
     saveSettings = (e)=> {
         e.preventDefault();
