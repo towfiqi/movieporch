@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import debounce from 'lodash/debounce';
+import _ from 'lodash';
 import {get_genre_name} from '../helpers';
 import {tmdbkey} from '../keys'
 import axios from 'axios';
@@ -16,7 +16,7 @@ class SearchBar extends React.PureComponent {
     }
 
     componentDidMount(){
-        this.searchMovies = debounce(function(){  console.log('Debounced:', this.state.search_term); this.getSearchItems();   }, 350);
+        this.searchMovies = _.debounce(function(){  console.log('Debounced:', this.state.search_term); this.getSearchItems();   }, 350);
     }
 
 
